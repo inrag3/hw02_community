@@ -1,13 +1,19 @@
+from django.core.paginator import Paginator
 from django.shortcuts import render, get_object_or_404
-
 from .models import Post, Group
 
 
 def index(request):
     template = 'posts/index.html'
-    posts = Post.objects.all()[:10]
+    # TODO Переопределить Meta класс модели, чтобы сортировка была по умолчанию
+
+    post_list = Post.objects.all().order_by('-pub_date')
+    paginator = Paginator(post_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
-        'posts': posts,
+        'page_obj': page_obj,
     }
     return render(request, template, context)
 
@@ -15,10 +21,14 @@ def index(request):
 def group_posts(request, slug):
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
-    # Теперь стало более логично брать посты у группы, через related_name :)
-    posts = group.posts.order_by('-pub_date')[:10]
+    # Наверно стоит вынести повторяющиеся код
+    post_list = group.posts.order_by('-pub_date')
+    paginator = Paginator(post_list, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     context = {
         'group': group,
-        'posts': posts,
+        'page_obj': page_obj,
     }
     return render(request, template, context)
