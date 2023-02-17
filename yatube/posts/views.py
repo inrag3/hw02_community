@@ -32,3 +32,20 @@ def group_posts(request, slug):
         'page_obj': page_obj,
     }
     return render(request, template, context)
+
+
+def profile(request, username):
+    context = {
+
+    }
+    return render(request, 'posts/profile.html', context)
+
+
+def post_detail(request, post_id):
+    post = Post.objects.get(pk=post_id)
+    count = Post.objects.all().filter(author=post.author).count()
+    context = {
+        'post': post,
+        'count': count,
+    }
+    return render(request, 'posts/post_detail.html', context)
