@@ -1,13 +1,13 @@
 from django.core.paginator import Paginator
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from .models import Post, Group, User
+from .forms import PostForm
+from django.contrib.auth.decorators import login_required
 
 
 def index(request):
     template = 'posts/index.html'
-    # TODO Переопределить Meta класс модели, чтобы сортировка была по умолчанию
-
-    post_list = Post.objects.all().order_by('-pub_date')
+    post_list = Post.objects.all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -22,7 +22,7 @@ def group_posts(request, slug):
     template = 'posts/group_list.html'
     group = get_object_or_404(Group, slug=slug)
     # Наверно стоит вынести повторяющиеся код
-    post_list = group.posts.order_by('-pub_date')
+    post_list = group.posts.all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -36,14 +36,14 @@ def group_posts(request, slug):
 
 def profile(request, username):
     template = 'posts/profile.html'
-    user = User.objects.get(username=username)
-    post_list = user.posts.all()
+    profile = User.objects.get(username=username)
+    post_list = profile.posts.all()
     paginator = Paginator(post_list, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     context = {
-        'user': user,
+        'profile': profile,
         'page_obj': page_obj,
         'count': post_list.count(),
     }
@@ -59,3 +59,18 @@ def post_detail(request, post_id):
         'count': count,
     }
     return render(request, template, context)
+
+
+@login_required
+def post_create(request):
+    template = 'posts/create_post.html'
+    if request.method == 'POST':
+        form = PostForm(request.POST)
+
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect(f'/profile/{post.author}/', {'form': form})
+    form = PostForm()
+    return render(request, template, {'form': form})
