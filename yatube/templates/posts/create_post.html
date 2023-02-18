@@ -18,7 +18,8 @@
                 Добавить запись
             {% endif %}               
         </div>
-        <div class="card-body"> 
+        <div class="card-body">
+            {% load user_filters %} 
             {% if form.errors %}
                 {% for field in form %}
                 {% for error in field.errors %}            
@@ -40,29 +41,27 @@
                           {% else %}
                             {% url 'posts:post_create' %} 
                           {% endif %}">
-                    
             {% csrf_token %}
-            {% load user_filters %}
             {% for field in form %} 
                 <div class="form-group row my-3">
-                <label for="{{ field.id_for_label }}">
+                  <label for="{{ field.id_for_label }}">
                     {{ field.label }}
-                    {% if field.field.required %}
+                      {% if field.field.required %}
                         <span class="required text-danger">*</span>
-                    {% endif %}
-                </label>
-            
-                {{ field|addclass:'form-control' }} 
+                      {% endif %}
+                  </label>
+                  {# К полю ввода добавляем атрибут class #}
+                  {{ field|addclass:'form-control' }} 
                     {% if field.help_text %}
-                    <small 
-                        id="{{ field.id_for_label }}-help"
-                        class="form-text text-muted"
-                    >
+                      <small 
+                         id="{{ field.id_for_label }}-help"
+                         class="form-text text-muted"
+                      >
                         {{ field.help_text|safe }}
-                    </small>
+                      </small>
                     {% endif %}
                 </div>
-            {% endfor %}
+              {% endfor %}
 
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary">
