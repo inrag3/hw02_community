@@ -1,12 +1,22 @@
 {% extends 'base.html' %}
-{% block title %}Новый пост{% endblock %}
+{% block title %}
+{% if is_edit %}
+    Редактировать запись
+{% else %}
+    Добавить запись
+{% endif %}   
+{% endblock %}
 {% block content %}
 <div class="container py-5">
   <div class="row justify-content-center">
     <div class="col-md-8 p-5">
       <div class="card">
         <div class="card-header">       
-            Новый пост             
+            {% if is_edit %}
+                Редактировать запись
+            {% else %}
+                Добавить запись
+            {% endif %}               
         </div>
         <div class="card-body"> 
             {% if form.errors %}
@@ -24,7 +34,13 @@
                 {% endfor %}
             {% endif %}
 
-            <form method="post" action="{% url 'posts:post_create' %}">
+            <form method="post"
+                  action="{% if is_edit %}
+                            {% url 'posts:post_edit' post.id %}
+                          {% else %}
+                            {% url 'posts:post_create' %} 
+                          {% endif %}">
+                    
             {% csrf_token %}
             {% load user_filters %}
             {% for field in form %} 
@@ -50,8 +66,12 @@
 
             <div class="d-flex justify-content-end">
                 <button type="submit" class="btn btn-primary">
-                  Сохранить
-                </button>
+                    {% if is_edit %}
+                      Сохранить
+                    {% else %}
+                      Добавить
+                    {% endif %}               
+                  </button> 
             </div>
             </form>
         </div>
